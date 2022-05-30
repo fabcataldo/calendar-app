@@ -1,34 +1,48 @@
-import React from 'react';
-import ReactDOM from "react-dom";
-import { Redirect } from 'react-router-dom';
-import {
-  BrowserRouter as Router,
-  Switch,
-  Route,
-  useParams
-} from "react-router-dom";
-import { LoginScreen } from '../components/auth/LoginScreen';
-import { CalendarScreen } from '../components/calendar/CalendarScreen';
+import React, { useEffect } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { Redirect } from "react-router-dom";
+import { BrowserRouter as Router, Switch } from "react-router-dom";
+import { startChecking } from "../actions/auth";
+import { LoginScreen } from "../components/auth/LoginScreen";
+import { CalendarScreen } from "../components/calendar/CalendarScreen";
+import { PrivateRoute } from "./PrivateRoute";
+import { PublicRoute } from "./PublicRoute";
 
 export const AppRouter = () => {
+  const dispatch = useDispatch();
+  const { checking, uid } = useSelector((state) => state.auth);
+
+  useEffect(() => {
+    dispatch(startChecking());
+
+    console.log("CHECKING, UID");
+    console.log(checking, uid);
+  }, [dispatch]);
+
+  if (checking) {
+    return <h5>Espere...</h5>;
+  }
   return (
-    <div>
-        <Router>
-            <Switch>
-                <Route exact path='/login' component={LoginScreen}>
-                </Route>
+    <Router>
+      <div>
+        <Switch>
+          <PublicRoute
+            exact
+            path="/login"
+            component={LoginScreen}
+            isAuthenticated={!!uid}
+          ></PublicRoute>
 
-                <Route exact path='/' component={CalendarScreen}>
-                </Route>
+          <PrivateRoute
+            exact
+            path="/"
+            component={CalendarScreen}
+            isAuthenticated={!!uid}
+          ></PrivateRoute>
 
-                <Redirect to='/'></Redirect>
-            </Switch>
-        </Router>
- {/*
-        // exact /login
-        // exact /calendar
-     */}
-    </div>
-    
-  )
-}
+          <Redirect to="/"></Redirect>
+        </Switch>
+      </div>
+    </Router>
+  );
+};

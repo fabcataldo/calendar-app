@@ -9,7 +9,7 @@ import { CalendarEvent } from "./CalendarEvent";
 import { CalendarModal } from "./CalendarModal";
 import { useDispatch, useSelector } from "react-redux";
 import { uiOpenModal } from "../../actions/ui";
-import { eventClearActiveEvent, eventSetActive } from "../../actions/events";
+import { eventClearActiveEvent, eventSetActive, eventStartLoading } from "../../actions/events";
 import { AddNewFab } from "../ui/AddNewFab";
 import { DeleteEventFab } from "../ui/DeleteEventFab";
 moment.locale("es");
@@ -22,8 +22,13 @@ export const CalendarScreen = () => {
   );
 
   const dispatch = useDispatch();
-  //TODO leer del store los eventos
+
+  useEffect(() => {
+    dispatch(eventStartLoading());
+  }, [dispatch])
+  
   const {events, activeEvent } = useSelector( state => state.calendar );
+  const {uid} = useSelector( state => state.auth );
 
   const onSelectEvent = (e) => {
 
@@ -38,8 +43,9 @@ export const CalendarScreen = () => {
     localStorage.setItem("lastView", e);
   };
   const eventStyleGetter = (event, start, end, isSelected) => {
+
     const style = {
-      backgroundColor: "#367CF7",
+      backgroundColor: (uid===event.user._id) ? "#367CF7" : '#465660',
       borderRadius: "0px",
       opacity: 0.8,
       display: "block",
@@ -53,6 +59,9 @@ export const CalendarScreen = () => {
   const onSelectSlot=(e)=>{
     dispatch(eventClearActiveEvent());
   }
+
+  console.log('LLEGO ACA CALENDAR')
+  console.log(events)
   return (
     <div className="calendar-screen">
       <Navbar />
